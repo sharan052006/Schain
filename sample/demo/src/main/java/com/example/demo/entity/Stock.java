@@ -1,13 +1,12 @@
 package com.example.demo.entity;
 
 import jakarta.persistence.Entity;
-import jakarta.persistence.OneToMany;
-import jakarta.persistence.OneToOne;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
-import jakarta.persistence.*;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToOne;
 import lombok.Data;
 
 @Entity
@@ -19,19 +18,20 @@ public class Stock {
     private Long capacity;
     private Long available;
 
-    @OneToMany
+    @ManyToOne
     @JoinColumn(name = "Pid")
-    private product product;
+    private Product product;
 
-    @ManyToMany(mappedBy = "stock")
-    private warehouse warehouse;
+    @ManyToOne
+    @JoinColumn(name = "Wid")
+    private Warehouse warehouse;
 
     @OneToOne
     @JoinColumn(name="SId")
     private Supplier supplier;
 
-    @ManyToMany
+    @ManyToOne
     @JoinColumn(name = "Oid")
-    private order order;
+    private Order order;
 
 }

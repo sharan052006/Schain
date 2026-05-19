@@ -8,7 +8,7 @@ import lombok.Data;
 
 @Entity
 @Data
-public class product {
+public class Product {
     
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -16,4 +16,24 @@ public class product {
     private String Pname;
     private Long price;
     
+    public Long getPid() {
+        return Pid;
+    }
+
+    public String getPname() {
+        return Pname;
+    }
+
+    public Long getPrice() {
+        return price;
+    }
+
+    public void setPname(String Pname) {
+        this.Pname = Pname;
+    }
+
+    public void setPrice(Long price) {
+        this.price = price;
+    }
+
 }

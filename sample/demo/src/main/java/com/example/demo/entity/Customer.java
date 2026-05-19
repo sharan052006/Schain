@@ -20,6 +20,6 @@ public class Customer {
 
     @OneToMany
     @JoinColumn(name = "Cid")
-    private List<order> order;
+    private List<Order> order;
 
 }

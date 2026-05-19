@@ -6,12 +6,14 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
+import jakarta.persistence.Table;
 import lombok.Data;
 import java.util.List;
 
 @Entity
+@Table(name = "orders")
 @Data
-public class order {
+public class Order {
     
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -22,5 +24,13 @@ public class order {
 
     @OneToMany(mappedBy = "order")
     private List<Stock> stock;
+
+    public void setCustomer(Customer customer) {
+        this.customer = customer;
+    }
+
+    public void setStock(List<Stock> stock) {
+        this.stock = stock;
+    }
 
 }

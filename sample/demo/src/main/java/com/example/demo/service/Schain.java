@@ -1,6 +1,7 @@
 package com.example.demo.service;
 
 import org.springframework.stereotype.Service;
+
 import com.example.demo.entity.*;
 import com.example.demo.repository.*;
 
@@ -8,6 +9,7 @@ import java.util.List;
 
 @Service
 public class Schain {
+
     private final OrderRepository orderRepository;
     private final ProductRepository productRepository;
     private final StockRepository stockRepository;
@@ -16,7 +18,14 @@ public class Schain {
     private final CustomerRepository customerRepository;
     private final SupplierRepository supplierRepository;
 
-    public Schain(OrderRepository orderRepository, ProductRepository productRepository, StockRepository stockRepository, WarehouseRepository warehouseRepository, WarehouseOrderRepository warehouseOrderRepository, CustomerRepository customerRepository, SupplierRepository supplierRepository) {
+    public Schain(OrderRepository orderRepository,
+                  ProductRepository productRepository,
+                  StockRepository stockRepository,
+                  WarehouseRepository warehouseRepository,
+                  WarehouseOrderRepository warehouseOrderRepository,
+                  CustomerRepository customerRepository,
+                  SupplierRepository supplierRepository) {
+
         this.orderRepository = orderRepository;
         this.productRepository = productRepository;
         this.stockRepository = stockRepository;
@@ -26,53 +35,101 @@ public class Schain {
         this.supplierRepository = supplierRepository;
     }
 
+    
     public Customer registerCustomer(Customer customer) {
+
         return customerRepository.save(customer);
     }
-    public product registerProduct(product product) {
+
+    
+    public Product registerProduct(Product product) {
+
         return productRepository.save(product);
     }
+
+    
     public Supplier registerSupplier(Supplier supplier) {
+
         return supplierRepository.save(supplier);
     }
-    public Stock registerStock(Stock stock) {
+
+    public Stock registerStock(Long productId, Stock stock) {
+
+        Product product = productRepository.findById(productId)
+                .orElseThrow(() -> new RuntimeException("Product not found"));
+
+        stock.setProduct(product);
+
         return stockRepository.save(stock);
     }
-    public warehouse registerWarehouse(warehouse warehouse) {
+
+    
+    public Warehouse registerWarehouse(Warehouse warehouse) {
+
         return warehouseRepository.save(warehouse);
     }
-    public order registerOrder(order order) {
-        return orderRepository.save(order);
-    }
-    public Stock updateStockAvailability(Long stockId, Long available) {
-        Stock stock = stockRepository.findById(stockId).orElseThrow(() -> new RuntimeException("Stock not found"));
-        stock.setAvailable(available);
-        stockRepository.save(stock);
-        if (stock.getAvailable() != null && stock.getAvailable() < 0) {
+
+    
+    public Order placeOrder(Long customerId, Long productId, Long qty) {
+
+        
+        Customer customer = customerRepository.findById(customerId)
+                .orElseThrow(() -> new RuntimeException("Customer not found"));
+
+        
+        Product product = productRepository.findById(productId)
+                .orElseThrow(() -> new RuntimeException("Product not found"));
+
+    
+        Stock stock = stockRepository.findAll()
+                .stream()
+                .filter(s -> s.getProduct() != null
+                        && s.getProduct().getPid().equals(productId))
+                .findFirst()
+                .orElseThrow(() -> new RuntimeException("Stock not found"));
+
+        Long available = stock.getAvailable();
+
+       
+        if (available < qty) {
+
             WarehouseOrder warehouseOrder = new WarehouseOrder();
+
+            warehouseOrder.setProduct(product);
+
+            warehouseOrder.setQuantity(qty - available);
+
+            warehouseOrderRepository.save(warehouseOrder);
+
+            throw new RuntimeException("Insufficient stock. Warehouse order created");
+        }
+
+        
+        stock.setAvailable(available - qty);
+
+        stockRepository.save(stock);
+
+       
+        Order order = new Order();
+
+        order.setCustomer(customer);
+
+        order.setStock(List.of(stock));
+
+        orderRepository.save(order);
+
+        
+        if (stock.getAvailable() == 0) {
+
+            WarehouseOrder warehouseOrder = new WarehouseOrder();
+
+            warehouseOrder.setProduct(product);
+
+            warehouseOrder.setQuantity(50L);
+
             warehouseOrderRepository.save(warehouseOrder);
         }
-        return stock;
+
+        return order;
     }
-
-    public order placeOrder(Long customerId, Long productId, Long qty) {
-        Customer c = customerRepository.findById(customerId).orElseThrow(() -> new RuntimeException("customer not found"));
-        product p = productRepository.findById(productId).orElseThrow(() -> new RuntimeException("product not found"));
-        Stock s = stockRepository.findAll().stream()
-                .filter(x -> x.getProduct() != null && p.getPid().equals(x.getProduct().getPid()))
-                .findFirst().orElseThrow(() -> new RuntimeException("stock not found"));
-
-        long avail = s.getAvailable() == null ? 0L : s.getAvailable();
-        long remaining = avail - (qty == null ? 0L : qty);
-        if (remaining < 0) remaining = 0;
-        s.setAvailable(remaining);
-        stockRepository.save(s);
-
-        order o = new order(); o.setCustomer(c); o = orderRepository.save(o);
-        o.setStock(List.of(s)); orderRepository.save(o);
-
-        if (avail < (qty == null ? 0L : qty)) warehouseOrderRepository.save(new WarehouseOrder());
-        return o;
-    }
-
 }

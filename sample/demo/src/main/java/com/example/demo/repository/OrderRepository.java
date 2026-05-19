@@ -1,7 +1,7 @@
 package com.example.demo.repository;
 
-import com.example.demo.entity.order;
+import com.example.demo.entity.Order;
 import org.springframework.data.jpa.repository.JpaRepository;
 
-public interface OrderRepository extends JpaRepository<order, Long> {
+public interface OrderRepository extends JpaRepository<Order, Long> {
 }

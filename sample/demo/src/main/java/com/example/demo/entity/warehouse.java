@@ -4,13 +4,13 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToMany;
+import jakarta.persistence.OneToMany;
+import java.util.List;
 import lombok.Data;
 
 @Entity
 @Data
-public class warehouse {
+public class Warehouse {
     
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -18,9 +18,8 @@ public class warehouse {
     private String Wname;
     private String Wlocation;
 
-    @ManyToMany
-    @JoinColumn(name = "Sid")
-    private Stock stock;
+    @OneToMany(mappedBy = "warehouse")
+    private List<Stock> stock;
 
 
 
